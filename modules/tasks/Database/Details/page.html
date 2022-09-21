@@ -1,0 +1,95 @@
+﻿<div id=D__ID>
+    <div>
+        <div>
+            <div id=toolbar__ID>
+                <button id=submit__ID  type=button class='btn btn-secondary' title='Submit'>Submit</button>
+            </div>
+            <div id=table__ID>
+                <table id=grid__ID></table>
+            </div>
+        </div>
+            <div id="json_editor__ID"></div>
+    </div>
+    <script>
+        function F__ID(){
+            const container = document.getElementById("json_editor__ID")
+            const options = {
+                "mainMenuBar":false,
+                "navigationBar":false
+            }
+            const editor = new JSONEditor(container, options)
+            var m=$vm.module_list['__MODULE__'];
+            var record="";
+            var table="";
+            $('#D__ID').on('load',function(){
+                record="";
+                table="";
+                if(m.input.record!=undefined){
+                    record=m.input.record
+                    editor.set(record.Data);
+                }
+                if(m.input.record==undefined && m.input.table!=undefined){
+                    table=m.input.table;
+                    editor.set({});
+                }
+            })
+            $('#submit__ID').on('click',function(){
+                if(record!=""){
+                    var rid=record._id;
+                    var data=editor.get();
+                    if(rid!=undefined){
+                        $vm.request({cmd:"update",id:rid,table:record.Table,data:data,index:{},file:{},options:{}},function(res){
+                            //-----------------------------
+                            if(res.status=="lk"){
+                                $vm.alert("This record is locked.");
+                                return;
+                            }
+                            //-----------------------------
+                            if(res.status=="np"){
+                                alert("No permission to update this record.");
+                                return;
+                            }
+                            //-----------------------------
+                            $vm.refresh=1;
+                            m.change_status++;
+                            if(rid!=undefined) window.history.go(-1);
+                        });
+                    }
+                }
+                else if(record=="" && table!=""){
+                    var data=editor.get();
+                    $vm.request({cmd:"insert",table:table,data:data,index:{},file:{},options:{}},function(res){
+                        //-----------------------------
+                        if(res.status=="lk"){
+                            $vm.alert("This record is locked.");
+                            return;
+                        }
+                        //-----------------------------
+                        if(res.status=="np"){
+                            alert("No permission to update this record.");
+                            return;
+                        }
+                        //-----------------------------
+                        $vm.refresh=1;
+                        m.change_status++;
+                        window.history.go(-1);
+                    });
+                }
+            })
+        }
+    </script>
+    <style>
+        #D__ID{
+            height:100%;
+            color:#fff;
+            background-color:#fff;
+            padding:0px;
+        }
+        #toolbar__ID{
+            background-color:#ccc;
+            padding:5px 10px;
+            margin-bottom:0px;
+            overflow:hidden
+        }
+    </style>
+</div>
